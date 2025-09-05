@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class Player : MonoBehaviour
 {
@@ -21,27 +21,37 @@ public class Player : MonoBehaviour
         controller = GetComponent<CharacterController>();
     }
 
-
     void Update()
     {
+        // ✅ Ground check
         isGrounded = Physics.CheckSphere(Ground.position, GroundDistance, layerMask);
 
-        if(isGrounded && velocity.y < 0)
+        if (isGrounded && velocity.y < 0)
         {
             velocity.y = -2f;
         }
 
-        Vector3 Move = transform.right * joystick.Horizontal + transform.forward * joystick.Vertical;
-        controller.Move(Move * SpeedMove * Time.deltaTime);
+        // ✅ Joystick input
+        Vector2 input = new Vector2(joystick.Horizontal, joystick.Vertical);
 
-        if(isGrounded && isPressed)
+        // ✅ Joystick ka push strength (0 = center, 1 = full tilt)
+        float strength = Mathf.Clamp01(input.magnitude);
+
+        // ✅ Move direction
+        Vector3 Move = transform.right * input.x + transform.forward * input.y;
+
+        // ✅ Apply movement (speed joystick ke hisaab se scale hogi)
+        controller.Move(Move * (SpeedMove * strength) * Time.deltaTime);
+
+        // ✅ Jump
+        if (isGrounded && isPressed)
         {
             velocity.y = Mathf.Sqrt(jumpHeight * -2f * Gravity);
             isGrounded = false;
         }
 
+        // ✅ Gravity
         velocity.y += Gravity * Time.deltaTime;
         controller.Move(velocity * Time.deltaTime);
-
     }
 }
